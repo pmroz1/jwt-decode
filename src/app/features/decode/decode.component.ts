@@ -6,7 +6,10 @@ import {
   signal,
 } from '@angular/core';
 import { TextAreaComponent } from '@app/shared/components/text-area/text-area.component';
-import { exampleEncodedJwt } from '@app/shared/data/example-jwt.data';
+import {
+  exampleEncodedJwt,
+  exampleSigningKey,
+} from '@app/shared/data/example-jwt.data';
 import { TagModule } from 'primeng/tag';
 import { TagData } from '@features/decode/models/tag.model';
 import { SeverityType } from './dictionaries/severity-type.dictionary';
@@ -45,21 +48,31 @@ import { DecodeFacadeService } from './services/decode-facade.service';
         </div>
         <app-text-area
           class="w-full h-full pt-4"
+          [height]="'h-200'"
           [inputValue]="jwt()"
           [readonly]="false"
           [placeholder]="'Enter JWT here...'"
           (valueChange)="jwtChanged($event)"
+        ></app-text-area>
+        <app-text-area
+          class="w-full h-20 pt-4"
+          [placeholder]="'Enter Signing Key here...'"
+          [inputValue]="signingKey()"
         ></app-text-area>
       </div>
       <div class="flex flex-col flex-1 h-full justify-start p-4">
         <div class="flex flex-row items-center justify-between ml-4 mr-4">
           <p class="text-lg font-semibold gap-2">{{ summaryHeader }}</p>
           <div class="ml-4 flex flex-wrap gap-2">
-            <button pButton severity="secondary" (click)="copyToClipboard('test', summaryTags)">
+            <button
+              pButton
+              severity="secondary"
+              (click)="copyToClipboard('test', summaryTags)"
+            >
               <i class="pi pi-copy" pButtonIcon></i>
               <span pButtonLabel>COPY</span>
             </button>
-              @for(tag of summaryTags(); track $index) {
+            @for(tag of summaryTags(); track $index) {
             <p-tag [value]="tag.value" [severity]="tag.severity"></p-tag>
             }
           </div>
@@ -90,6 +103,7 @@ import { DecodeFacadeService } from './services/decode-facade.service';
 export class DecodeComponent {
   private serviceFacade = inject(DecodeFacadeService);
   jwt = signal<string>(exampleEncodedJwt.trim());
+  signingKey = signal<string>(exampleSigningKey.trim());
   decodedJwt = signal<string>('');
 
   inputHeader = 'JSON Web Token (JWT) Input:';

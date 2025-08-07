@@ -14,8 +14,8 @@ import { TextareaModule } from 'primeng/textarea';
     <div
       pTextarea
       id="input-textarea"
-      class="w-full h-full resize-none font-mono text-sm"
       (input)="readonly() ? null : onInputChange($event)"
+      class="{{ defaultClass }} {{ height() }}"
     >
       {{ inputValue() }}
     </div>
@@ -23,7 +23,7 @@ import { TextareaModule } from 'primeng/textarea';
     <textarea
       pTextarea
       id="input-textarea"
-      class="w-full h-200 resize-none font-mono text-sm"
+      class="{{ defaultClass }} {{ height() }}"
       placeholder="{{ placeholder() }}"
       (input)="readonly() ? null : onInputChange($event)"
       >{{ inputValue() }}</textarea
@@ -36,9 +36,15 @@ export class TextAreaComponent {
   readonly = input<boolean>(false);
   placeholder = input<string>('Enter data here...');
   valueChange = output<string>();
+  height = input<string>('');
+  defaultClass = 'w-full resize-none font-mono text-sm';
 
   onInputChange(event: Event) {
     const target = event.target as HTMLTextAreaElement;
     this.valueChange.emit(target.value);
+  }
+
+  getClass() {
+    return `${this.defaultClass} ${this.height() ?? 'h-full'}`;
   }
 }
