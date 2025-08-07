@@ -1,7 +1,7 @@
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -15,10 +15,11 @@ import { TagData } from '@features/decode/models/tag.model';
 import { SeverityType } from './dictionaries/severity-type.dictionary';
 import { ButtonModule } from 'primeng/button';
 import { DecodeFacadeService } from './services/decode-facade.service';
+import { SummaryAreaComponent } from './components';
 
 @Component({
   selector: 'app-decode',
-  imports: [TextAreaComponent, TagModule, ButtonModule],
+  imports: [TextAreaComponent, TagModule, ButtonModule, SummaryAreaComponent],
   template: `
     <div class="flex flex-row items-stretch h-full">
       <div class="flex flex-col flex-1 h-full p-4">
@@ -61,60 +62,50 @@ import { DecodeFacadeService } from './services/decode-facade.service';
         ></app-text-area>
       </div>
       <div class="flex flex-col flex-1 h-full justify-start p-4">
-        <div class="flex flex-row items-center justify-between ml-4 mr-4">
-          <p class="text-lg font-semibold gap-2">{{ summaryHeader }}</p>
-          <div class="ml-4 flex flex-wrap gap-2">
-            <button
-              pButton
-              severity="secondary"
-              (click)="copyToClipboard('test', summaryTags)"
-            >
-              <i class="pi pi-copy" pButtonIcon></i>
-              <span pButtonLabel>COPY</span>
-            </button>
-            @for(tag of summaryTags(); track $index) {
-            <p-tag [value]="tag.value" [severity]="tag.severity"></p-tag>
-            }
-          </div>
-        </div>
-        <app-text-area
-          class="w-full h-20 p-4"
-          [readonly]="true"
-          [placeholder]="''"
-          [inputValue]="decodedJwt()"
-        ></app-text-area>
-        <app-text-area
-          class="w-full h-20 p-4"
-          [readonly]="true"
-          [placeholder]="''"
-          [inputValue]="decodedJwt()"
-        ></app-text-area>
-        <app-text-area
-          class="w-full h-20 p-4"
-          [readonly]="true"
-          [placeholder]="''"
-          [inputValue]="decodedJwt()"
-        ></app-text-area>
+        <app-summary-area
+            [header]="summaryHeader"
+            [tagList]="summaryTags()"
+            [displayValue]="decodedJwt()"
+            [height]="'h-80'"
+            [copyFunction]="copyToClipboardWrapper"
+        ></app-summary-area>
+        <app-summary-area
+            [header]="payloadHeader"
+            [tagList]="summaryTags()"
+            [displayValue]="decodedJwt()"
+            [height]="'h-80'"
+            [copyFunction]="copyToClipboardWrapper"
+        ></app-summary-area>
       </div>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DecodeComponent {
+export class DecodeComponent implements AfterViewInit {
   private serviceFacade = inject(DecodeFacadeService);
   jwt = signal<string>(exampleEncodedJwt.trim());
   signingKey = signal<string>(exampleSigningKey.trim());
   decodedJwt = signal<string>('');
-
-  inputHeader = 'JSON Web Token (JWT) Input:';
-  summaryHeader = 'Decoded JWT Summary:';
   encodedJwtInputTags = signal<TagData[]>([]);
   summaryTags = signal<TagData[]>([]);
+
+  inputHeader = 'JSON Web Token (JWT) Input:';
+  summaryHeader = 'HEADER:';
+  payloadHeader = 'PAYLOAD:';
+  signatureHeader = 'SIGNATURE:';
+
+  ngAfterViewInit() {
+    this.jwtChanged(this.jwt());
+  }
 
   jwtChanged($event: string) {
     console.log('JWT input changed:', $event);
     this.jwt.set($event);
-    this.decodedJwt.set(this.serviceFacade.decodeJwt($event));
+    const decoded = this.serviceFacade.decodeJwt($event, this.signingKey());
+
+    this.decodedJwt.set(
+      decoded ? JSON.stringify(decoded, null, 2) : 'Invalid JWT'
+    );
   }
 
   clearInput() {
@@ -148,4 +139,8 @@ export class DecodeComponent {
         );
       });
   }
+
+  copyToClipboardWrapper = (value: string, tags: TagData[]) => {
+    this.copyToClipboard(value, this.encodedJwtInputTags);
+  };
 }

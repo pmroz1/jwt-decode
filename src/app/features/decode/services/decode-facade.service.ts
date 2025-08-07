@@ -25,7 +25,7 @@ export class DecodeFacadeService {
     this.tagService.blinkTag(message, severity, inputTags);
   }
 
-  decodeJwt(jwt: string): any {
-    return this.jwtService.decodeJwt(jwt);
+  decodeJwt(jwt: string, signingKey: string): any {
+    return this.jwtService.decodeJwt(jwt, signingKey);
   }
 }

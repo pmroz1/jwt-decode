@@ -17,7 +17,7 @@ export class JwtService {
     return jwt ? this.isSignatureValid(jwt) : false;
   });
 
-  decodeJwt(jwt: string): any {
+  decodeJwt(jwt: string, signingKey: string): any {
     if (!jwt) return null;
 
     const parts = jwt.split('.');
