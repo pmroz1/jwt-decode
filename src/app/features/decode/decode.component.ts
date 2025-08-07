@@ -22,6 +22,27 @@ import { SummaryAreaComponent } from './components';
   selector: 'app-decode',
   imports: [TextAreaComponent, TagModule, ButtonModule, SummaryAreaComponent],
   template: `
+    <div class="flex flex-col items-end h-full p-4">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold">Decoded JWT</h2>
+        <div class="flex gap-2">
+          <p-tag
+            [value]="
+              serviceFacade.isSignatureValid()
+                ? '✓ Signature Valid'
+                : '✗ Signature Invalid'
+            "
+            [severity]="serviceFacade.isSignatureValid() ? 'success' : 'danger'"
+            class="text-sm"
+          ></p-tag>
+          <p-tag
+            [value]="serviceFacade.isValid() ? '✓ JWT Valid' : '✗ JWT Invalid'"
+            [severity]="serviceFacade.isValid() ? 'success' : 'danger'"
+            class="text-sm"
+          ></p-tag>
+        </div>
+      </div>
+    </div>
     <div class="flex flex-row items-stretch h-full">
       <div class="flex flex-col flex-1 h-full pt-4">
         <div class="flex flex-row justify-between items-center ">
@@ -61,11 +82,16 @@ import { SummaryAreaComponent } from './components';
           <div class="flex flex-row items-center justify-between mb-2">
             <p class="text-lg font-semibold">{{ signatureHeader }}</p>
             <div class="ml-4 flex flex-wrap gap-2">
-              <button pButton severity="secondary" (click)="copyToClipboard(signingKey(), signatureHeader)">
+              <button
+                pButton
+                severity="secondary"
+                (click)="copyToClipboard(signingKey(), signatureHeader)"
+              >
                 <i class="pi pi-copy" pButtonIcon></i>
                 <span pButtonLabel>COPY</span>
               </button>
-              @for(tag of (getTagsArrayFromMap(this.signatureHeader)?.() ?? []); track $index) {
+              @for(tag of (getTagsArrayFromMap(this.signatureHeader)?.() ?? []);
+              track $index) {
               <p-tag [value]="tag.value" [severity]="tag.severity"></p-tag>
               }
             </div>
@@ -81,21 +107,6 @@ import { SummaryAreaComponent } from './components';
         </div>
       </div>
       <div class="flex flex-col flex-1 h-full justify-start p-4">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-semibold">Decoded JWT</h2>
-          <div class="flex gap-2">
-            <p-tag
-              [value]="serviceFacade.isSignatureValid() ? '✓ Signature Valid' : '✗ Signature Invalid'"
-              [severity]="serviceFacade.isSignatureValid() ? 'success' : 'danger'"
-              class="text-sm"
-            ></p-tag>
-            <p-tag
-              [value]="serviceFacade.isValid() ? '✓ JWT Valid' : '✗ JWT Invalid'"
-              [severity]="serviceFacade.isValid() ? 'success' : 'danger'"
-              class="text-sm"
-            ></p-tag>
-          </div>
-        </div>
         <app-summary-area
           [header]="summaryHeader"
           [tagList]="getTagsArrayFromMap(this.summaryHeader)?.() ?? []"
@@ -167,7 +178,7 @@ export class DecodeComponent implements AfterViewInit {
   private revalidateJwt() {
     const jwtValue = this.jwt().trim();
     const signingKeyValue = this.signingKey().trim();
-    
+
     if (!jwtValue) {
       this.currentDecodedJwt.set(null);
       this.decodedJwt.set('');
@@ -190,7 +201,6 @@ export class DecodeComponent implements AfterViewInit {
     this.signingKey.set('');
     this.decodedJwt.set('');
     this.currentDecodedJwt.set(null);
-    // Clear the JWT service state as well
     this.serviceFacade.decodeJwt('', '');
   }
 
