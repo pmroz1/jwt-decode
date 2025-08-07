@@ -15,6 +15,10 @@ import { ButtonModule } from 'primeng/button';
         <div class="flex flex-row justify-between items-center ">
           <p class="text-lg font-semibold">{{ inputHeader }}</p>
           <div class="ml-4 flex flex-wrap gap-2">
+            <button pButton severity="secondary" (click)="pasteSampleJwt()">
+              <i class="pi pi-eraser" pButtonIcon></i>
+              <span pButtonLabel>PASTE SAMPLE JWT</span>
+            </button>
             <button pButton severity="secondary" (click)="clearInput()">
               <i class="pi pi-eraser" pButtonIcon></i>
               <span pButtonLabel>CLEAR</span>
@@ -54,9 +58,12 @@ export class DecodeComponent {
   ]);
 
   clearInput() {
-    // this.jwt.set('');
     this.jwt.set('');
     this.decodedJwt.set('');
+  }
+
+  pasteSampleJwt() {
+    this.jwt.set(exampleEncodedJwt.trim());
   }
 
   copyToClipboard() {
