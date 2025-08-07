@@ -20,10 +20,16 @@ export class JwtService {
   });
 
   decodeJwt(jwt: string, signingKey?: string): JwtDecoded | null {
-    if (!jwt) return null;
+    if (!jwt) {
+      this.currentJwt.set(null);
+      return null;
+    }
 
     const parts = jwt.split('.');
-    if (parts.length !== 3) return null;
+    if (parts.length !== 3) {
+      this.currentJwt.set(null);
+      return null;
+    }
 
     try {
       const header = JSON.parse(atob(parts[0]));
@@ -40,6 +46,7 @@ export class JwtService {
       return decoded;
     } catch (e) {
       console.error('Invalid JWT format', e);
+      this.currentJwt.set(null);
       return null;
     }
   }

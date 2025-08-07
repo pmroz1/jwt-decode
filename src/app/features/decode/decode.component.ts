@@ -50,20 +50,35 @@ import { SummaryAreaComponent } from './components';
           </div>
         </div>
         <app-text-area
-          class="w-full h-full pt-4"
+          class="w-full pt-4"
           [height]="'h-100'"
           [inputValue]="jwt()"
           [readonly]="false"
           [placeholder]="'Enter JWT here...'"
           (valueChange)="jwtChanged($event)"
         ></app-text-area>
-        <app-summary-area
-          [header]="signatureHeader"
-          [tagList]="getTagsArrayFromMap(this.signatureHeader)?.() ?? []"
-          [displayValue]="signingKey()"
-          [height]="'h-20'"
-          [copyFunction]="copyToClipboardWrapper"
-        ></app-summary-area>
+        <div class="flex flex-col pt-4">
+          <div class="flex flex-row items-center justify-between mb-2">
+            <p class="text-lg font-semibold">{{ signatureHeader }}</p>
+            <div class="ml-4 flex flex-wrap gap-2">
+              <button pButton severity="secondary" (click)="copyToClipboard(signingKey(), signatureHeader)">
+                <i class="pi pi-copy" pButtonIcon></i>
+                <span pButtonLabel>COPY</span>
+              </button>
+              @for(tag of (getTagsArrayFromMap(this.signatureHeader)?.() ?? []); track $index) {
+              <p-tag [value]="tag.value" [severity]="tag.severity"></p-tag>
+              }
+            </div>
+          </div>
+          <app-text-area
+            class="w-full"
+            [height]="'h-20'"
+            [inputValue]="signingKey()"
+            [readonly]="false"
+            [placeholder]="'Enter signing key...'"
+            (valueChange)="signingKeyChanged($event)"
+          ></app-text-area>
+        </div>
       </div>
       <div class="flex flex-col flex-1 h-full justify-start p-4">
         <div class="flex justify-between items-center mb-4">
@@ -140,7 +155,26 @@ export class DecodeComponent implements AfterViewInit {
   jwtChanged($event: string) {
     console.log('JWT input changed:', $event);
     this.jwt.set($event);
-    const decoded = this.serviceFacade.decodeJwt($event, this.signingKey());
+    this.revalidateJwt();
+  }
+
+  signingKeyChanged($event: string) {
+    console.log('Signing key changed:', $event);
+    this.signingKey.set($event);
+    this.revalidateJwt();
+  }
+
+  private revalidateJwt() {
+    const jwtValue = this.jwt().trim();
+    const signingKeyValue = this.signingKey().trim();
+    
+    if (!jwtValue) {
+      this.currentDecodedJwt.set(null);
+      this.decodedJwt.set('');
+      return;
+    }
+
+    const decoded = this.serviceFacade.decodeJwt(jwtValue, signingKeyValue);
 
     if (decoded) {
       this.currentDecodedJwt.set(decoded);
@@ -153,8 +187,11 @@ export class DecodeComponent implements AfterViewInit {
 
   clearInput() {
     this.jwt.set('');
+    this.signingKey.set('');
     this.decodedJwt.set('');
     this.currentDecodedJwt.set(null);
+    // Clear the JWT service state as well
+    this.serviceFacade.decodeJwt('', '');
   }
 
   pasteSampleJwt() {
