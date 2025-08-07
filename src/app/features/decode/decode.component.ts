@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -40,7 +41,7 @@ import { DecodeFacadeService } from './services/decode-facade.service';
         </div>
         <app-text-area
           class="w-full h-full pt-4"
-          [inputValue]="jwt()"
+          [inputValue]="coloredJwtString()"
           [placeholder]="'Enter JWT here...'"
         ></app-text-area>
       </div>
@@ -57,8 +58,11 @@ export class DecodeComponent {
   jwt = signal<string>(exampleEncodedJwt.trim());
   decodedJwt = signal<string>('');
 
-  inputHeader = 'JSON Web Token (JWT) Input:';
+  coloredJwtString = computed(()=>{
+    return this.serviceFacade.colorJwtString(this.jwt());
+  })
 
+  inputHeader = 'JSON Web Token (JWT) Input:';
   inputTags = signal<TagData[]>([]);
 
   clearInput() {

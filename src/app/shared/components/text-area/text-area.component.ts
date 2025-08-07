@@ -5,12 +5,12 @@ import { TextareaModule } from 'primeng/textarea';
   selector: 'app-text-area',
   imports: [TextareaModule],
   template: `
-    <textarea
-          pTextarea
-          id="input-textarea"
-          class="w-full min-h-80 h-220 resize-none font-mono text-sm"
-          placeholder="{{ placeholder() }}"
-        >{{ inputValue() }}</textarea>
+    <div
+      pTextarea
+      id="input-textarea"
+      class="w-full min-h-80 h-220 resize-none font-mono text-sm"
+      [innerHTML]="inputValue()"
+    ></div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
