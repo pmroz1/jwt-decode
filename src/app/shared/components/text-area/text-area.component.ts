@@ -14,7 +14,7 @@ import { TextareaModule } from 'primeng/textarea';
     <div
       pTextarea
       id="input-textarea"
-      class="w-full min-h-80 h-220 resize-none font-mono text-sm"
+      class="w-full h-full resize-none font-mono text-sm"
       (input)="readonly() ? null : onInputChange($event)"
     >
       {{ inputValue() }}
@@ -23,7 +23,7 @@ import { TextareaModule } from 'primeng/textarea';
     <textarea
       pTextarea
       id="input-textarea"
-      class="w-full min-h-80 h-220 resize-none font-mono text-sm"
+      class="w-full h-200 resize-none font-mono text-sm"
       placeholder="{{ placeholder() }}"
       (input)="readonly() ? null : onInputChange($event)"
       >{{ inputValue() }}</textarea

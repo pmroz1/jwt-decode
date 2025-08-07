@@ -17,8 +17,8 @@ import { DecodeFacadeService } from './services/decode-facade.service';
   selector: 'app-decode',
   imports: [TextAreaComponent, TagModule, ButtonModule],
   template: `
-    <div class="flex flex-row items-center min-h-100 h-full">
-      <div class="flex flex-col w-full h-full p-4">
+    <div class="flex flex-row items-stretch h-full">
+      <div class="flex flex-col flex-1 h-full p-4">
         <div class="flex flex-row justify-between items-center ">
           <p class="text-lg font-semibold">{{ inputHeader }}</p>
           <div class="ml-4 flex flex-wrap gap-2">
@@ -47,12 +47,35 @@ import { DecodeFacadeService } from './services/decode-facade.service';
           (valueChange)="jwtChanged($event)"
         ></app-text-area>
       </div>
-      <app-text-area
-        class="w-full h-full p-4"
-        [readonly]="true"
-        [placeholder]="''"
-        [inputValue]="decodedJwt()"
-      ></app-text-area>
+      <div class="flex flex-col flex-1 h-full justify-start p-4">
+        <div class="flex flex-row items-center justify-between ml-4 mr-4">
+          <p class="text-lg font-semibold gap-2">{{ summaryHeader }}</p>
+          <div class="ml-4 flex flex-wrap gap-2">
+            <button pButton severity="secondary" (click)="pasteSampleJwt()">
+              <i class="pi pi-eraser" pButtonIcon></i>
+              <span pButtonLabel>PASTE SAMPLE JWT</span>
+            </button>
+          </div>
+        </div>
+        <app-text-area
+          class="w-full h-20 p-4"
+          [readonly]="true"
+          [placeholder]="''"
+          [inputValue]="decodedJwt()"
+        ></app-text-area>
+        <app-text-area
+          class="w-full h-20 p-4"
+          [readonly]="true"
+          [placeholder]="''"
+          [inputValue]="decodedJwt()"
+        ></app-text-area>
+        <app-text-area
+          class="w-full h-20 p-4"
+          [readonly]="true"
+          [placeholder]="''"
+          [inputValue]="decodedJwt()"
+        ></app-text-area>
+      </div>
     </div>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,6 +86,7 @@ export class DecodeComponent {
   decodedJwt = signal<string>('');
 
   inputHeader = 'JSON Web Token (JWT) Input:';
+  summaryHeader = 'Decoded JWT Summary:';
   inputTags = signal<TagData[]>([]);
 
   jwtChanged($event: string) {
