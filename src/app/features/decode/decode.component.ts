@@ -1,10 +1,16 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import { TextAreaComponent } from '@app/shared/components/text-area/text-area.component';
 import { exampleEncodedJwt } from '@app/shared/data/example-jwt.data';
 import { TagModule } from 'primeng/tag';
 import { TagData } from '@features/decode/models/tag.model';
 import { SeverityType } from './dictionaries/severity-type.dictionary';
 import { ButtonModule } from 'primeng/button';
+import { TagService } from './services/tag.service';
 
 @Component({
   selector: 'app-decode',
@@ -47,15 +53,13 @@ import { ButtonModule } from 'primeng/button';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DecodeComponent {
+  tagService = inject(TagService);
   jwt = signal<string>(exampleEncodedJwt.trim());
   decodedJwt = signal<string>('');
 
   inputHeader = 'JSON Web Token (JWT) Input:';
 
-  inputTags = signal<TagData[]>([
-    // { value: 'JWT', severity: SeverityType.Info },
-    // { value: 'Decode', severity: SeverityType.Success },
-  ]);
+  inputTags = signal<TagData[]>([]);
 
   clearInput() {
     this.jwt.set('');
@@ -71,25 +75,19 @@ export class DecodeComponent {
     navigator.clipboard
       .writeText(textToCopy)
       .then(() => {
-        this.inputTags.set([
-          ...this.inputTags(),
-          { value: 'Copied to clipboard!', severity: SeverityType.Success },
-        ]);
-
-        setTimeout(() => {
-          this.inputTags.set(
-            this.inputTags().filter(
-              (tag) => tag.value !== 'Copied to clipboard!'
-            )
-          );
-        }, 2000);
+        this.tagService.blinkTag(
+          'Copied to clipboard',
+          SeverityType.Success,
+          this.inputTags
+        );
       })
       .catch((err) => {
         console.error('Failed to copy text: ', err);
-        this.inputTags.set([
-          ...this.inputTags(),
-          { value: 'Copy failed', severity: SeverityType.Danger },
-        ]);
+        this.tagService.blinkTag(
+          'Failed to copy',
+          SeverityType.Danger,
+          this.inputTags
+        );
       });
   }
 }
