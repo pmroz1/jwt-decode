@@ -10,7 +10,7 @@ import { TagModule } from 'primeng/tag';
 import { TagData } from '@features/decode/models/tag.model';
 import { SeverityType } from './dictionaries/severity-type.dictionary';
 import { ButtonModule } from 'primeng/button';
-import { TagService } from './services/tag.service';
+import { DecodeFacadeService } from './services/decode-facade.service';
 
 @Component({
   selector: 'app-decode',
@@ -53,7 +53,7 @@ import { TagService } from './services/tag.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DecodeComponent {
-  tagService = inject(TagService);
+  private serviceFacade = inject(DecodeFacadeService);
   jwt = signal<string>(exampleEncodedJwt.trim());
   decodedJwt = signal<string>('');
 
@@ -75,7 +75,7 @@ export class DecodeComponent {
     navigator.clipboard
       .writeText(textToCopy)
       .then(() => {
-        this.tagService.blinkTag(
+        this.serviceFacade.blinkTag(
           'Copied to clipboard',
           SeverityType.Success,
           this.inputTags
@@ -83,7 +83,7 @@ export class DecodeComponent {
       })
       .catch((err) => {
         console.error('Failed to copy text: ', err);
-        this.tagService.blinkTag(
+        this.serviceFacade.blinkTag(
           'Failed to copy',
           SeverityType.Danger,
           this.inputTags
