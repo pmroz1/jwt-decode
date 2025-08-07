@@ -30,11 +30,15 @@ import { DecodeFacadeService } from './services/decode-facade.service';
               <i class="pi pi-eraser" pButtonIcon></i>
               <span pButtonLabel>CLEAR</span>
             </button>
-            <button pButton severity="secondary" (click)="copyToClipboard()">
+            <button
+              pButton
+              severity="secondary"
+              (click)="copyToClipboard(jwt())"
+            >
               <i class="pi pi-copy" pButtonIcon></i>
               <span pButtonLabel>COPY</span>
             </button>
-            @for(tag of inputTags(); track $index) {
+            @for(tag of encodedJwtInputTags(); track $index) {
             <p-tag [value]="tag.value" [severity]="tag.severity"></p-tag>
             }
           </div>
@@ -51,10 +55,13 @@ import { DecodeFacadeService } from './services/decode-facade.service';
         <div class="flex flex-row items-center justify-between ml-4 mr-4">
           <p class="text-lg font-semibold gap-2">{{ summaryHeader }}</p>
           <div class="ml-4 flex flex-wrap gap-2">
-            <button pButton severity="secondary" (click)="pasteSampleJwt()">
-              <i class="pi pi-eraser" pButtonIcon></i>
-              <span pButtonLabel>PASTE SAMPLE JWT</span>
+            <button pButton severity="secondary" (click)="copyToClipboard('test', summaryTags)">
+              <i class="pi pi-copy" pButtonIcon></i>
+              <span pButtonLabel>COPY</span>
             </button>
+              @for(tag of summaryTags(); track $index) {
+            <p-tag [value]="tag.value" [severity]="tag.severity"></p-tag>
+            }
           </div>
         </div>
         <app-text-area
@@ -87,7 +94,8 @@ export class DecodeComponent {
 
   inputHeader = 'JSON Web Token (JWT) Input:';
   summaryHeader = 'Decoded JWT Summary:';
-  inputTags = signal<TagData[]>([]);
+  encodedJwtInputTags = signal<TagData[]>([]);
+  summaryTags = signal<TagData[]>([]);
 
   jwtChanged($event: string) {
     console.log('JWT input changed:', $event);
@@ -104,15 +112,17 @@ export class DecodeComponent {
     this.jwt.set(exampleEncodedJwt.trim());
   }
 
-  copyToClipboard() {
-    const textToCopy = this.jwt();
+  copyToClipboard(
+    textToCopy: string = this.jwt(),
+    tagsArraySignal = this.encodedJwtInputTags
+  ) {
     navigator.clipboard
       .writeText(textToCopy)
       .then(() => {
         this.serviceFacade.blinkTag(
           'Copied to clipboard',
           SeverityType.Success,
-          this.inputTags
+          tagsArraySignal
         );
       })
       .catch((err) => {
@@ -120,7 +130,7 @@ export class DecodeComponent {
         this.serviceFacade.blinkTag(
           'Failed to copy',
           SeverityType.Danger,
-          this.inputTags
+          tagsArraySignal
         );
       });
   }
