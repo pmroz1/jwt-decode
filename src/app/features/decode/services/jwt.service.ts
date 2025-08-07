@@ -64,17 +64,21 @@ export class JwtService {
     if (jwt.header.alg === 'HS256') {
       return this.verifyHS256Signature(jwt);
     }
+    if (jwt.header.alg === 'HS384') {
+      return this.verifyHS384Signature(jwt);
+    }
+    if (jwt.header.alg === 'HS512') {
+      return this.verifyHS512Signature(jwt);
+    }
     if (jwt.header.alg === 'RS256') {
       return this.verifyRS256Signature(jwt);
     }
-
     if (jwt.header.alg === 'PS256') {
       return this.verifyPS256Signature(jwt); 
     }
 
     console.warn('Unsupported JWT algorithm:', jwt.header.alg);
-
-    return false; // Placeholder for actual implementation
+    return false;
   }
 
   private verifyPS256Signature(jwt: JwtDecoded): boolean {
@@ -104,30 +108,33 @@ export class JwtService {
 
   private validateAudience(aud: string | string[] | undefined): boolean {
     if (!aud) {
-      console.warn('JWT token has no audience');
-      return false;
+      console.info('JWT token has no audience (optional)');
+      return true;
     }
     return true;
   }
 
   private validateIssuer(iss: string | undefined): boolean {
     if (!iss) {
-      console.warn('JWT token has no issuer');
-      return false;
+      console.info('JWT token has no issuer (optional)');
+      return true;
     }
     return true;
   }
 
   private validateClaims(payload: JwtPayload): boolean {
     const now = Math.floor(Date.now() / 1000);
+    
     if (payload.exp && payload.exp < now) {
       console.warn('JWT token is expired');
       return false;
     }
+    
     if (payload.iat && payload.iat > now) {
       console.warn('JWT token is not yet valid');
       return false;
     }
+    
     return true;
   }
 
@@ -149,8 +156,40 @@ export class JwtService {
     }
   }
 
-  private base64UrlEscape(str: string): string {
-    return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  private verifyHS384Signature(jwt: JwtDecoded): boolean {
+    if (!jwt.signingKey) {
+      console.warn('No signing key provided for HS384 verification');
+      return false;
+    }
+
+    try {
+      const parts = jwt.raw.split('.');
+      const signingInput = `${parts[0]}.${parts[1]}`;
+      const hash = CryptoJS.HmacSHA384(signingInput, jwt.signingKey);
+      const computedSignature = this.base64UrlEscape(CryptoJS.enc.Base64.stringify(hash));
+      return computedSignature === jwt.signature;
+    } catch (error) {
+      console.error('Error verifying HS384 signature:', error);
+      return false;
+    }
+  }
+
+  private verifyHS512Signature(jwt: JwtDecoded): boolean {
+    if (!jwt.signingKey) {
+      console.warn('No signing key provided for HS512 verification');
+      return false;
+    }
+
+    try {
+      const parts = jwt.raw.split('.');
+      const signingInput = `${parts[0]}.${parts[1]}`;
+      const hash = CryptoJS.HmacSHA512(signingInput, jwt.signingKey);
+      const computedSignature = this.base64UrlEscape(CryptoJS.enc.Base64.stringify(hash));
+      return computedSignature === jwt.signature;
+    } catch (error) {
+      console.error('Error verifying HS512 signature:', error);
+      return false;
+    }
   }
 
   private verifyRS256Signature(jwt: JwtDecoded): boolean {
@@ -171,6 +210,10 @@ export class JwtService {
       console.error('Error verifying RS256 signature:', error);
       return false;
     }
+  }
+
+  private base64UrlEscape(str: string): string {
+    return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
   }
 
   private base64UrlDecode(str: string): string {

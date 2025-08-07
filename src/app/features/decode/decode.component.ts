@@ -66,6 +66,21 @@ import { SummaryAreaComponent } from './components';
         ></app-summary-area>
       </div>
       <div class="flex flex-col flex-1 h-full justify-start p-4">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold">Decoded JWT</h2>
+          <div class="flex gap-2">
+            <p-tag
+              [value]="serviceFacade.isSignatureValid() ? '✓ Signature Valid' : '✗ Signature Invalid'"
+              [severity]="serviceFacade.isSignatureValid() ? 'success' : 'danger'"
+              class="text-sm"
+            ></p-tag>
+            <p-tag
+              [value]="serviceFacade.isValid() ? '✓ JWT Valid' : '✗ JWT Invalid'"
+              [severity]="serviceFacade.isValid() ? 'success' : 'danger'"
+              class="text-sm"
+            ></p-tag>
+          </div>
+        </div>
         <app-summary-area
           [header]="summaryHeader"
           [tagList]="getTagsArrayFromMap(this.summaryHeader)?.() ?? []"
@@ -86,7 +101,7 @@ import { SummaryAreaComponent } from './components';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DecodeComponent implements AfterViewInit {
-  private serviceFacade = inject(DecodeFacadeService);
+  readonly serviceFacade = inject(DecodeFacadeService);
   jwt = signal<string>(exampleEncodedJwt.trim());
   signingKey = signal<string>(exampleSigningKey.trim());
   decodedJwt = signal<string>('');

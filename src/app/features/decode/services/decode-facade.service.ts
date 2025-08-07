@@ -29,7 +29,11 @@ export class DecodeFacadeService {
     return this.jwtService.decodeJwt(jwt, signingKey);
   }
 
-  isValidJwt(jwt: string, signingKey: string): boolean {
+  isValid(): boolean {
+    return this.jwtService.valid();
+  }
+
+  isSignatureValid(): boolean {
     return this.jwtService.signatureValid();
   }
 }
