@@ -69,14 +69,14 @@ import { SummaryAreaComponent } from './components';
         <app-summary-area
           [header]="summaryHeader"
           [tagList]="getTagsArrayFromMap(this.summaryHeader)?.() ?? []"
-          [displayValue]="decodedJwt()"
+          [displayValue]="headerSection()"
           [height]="'h-80'"
           [copyFunction]="copyToClipboardWrapper"
         ></app-summary-area>
         <app-summary-area
           [header]="payloadHeader"
           [tagList]="getTagsArrayFromMap(this.payloadHeader)?.() ?? []"
-          [displayValue]="decodedJwt()"
+          [displayValue]="payloadSection()"
           [height]="'h-80'"
           [copyFunction]="copyToClipboardWrapper"
         ></app-summary-area>
@@ -90,6 +90,7 @@ export class DecodeComponent implements AfterViewInit {
   jwt = signal<string>(exampleEncodedJwt.trim());
   signingKey = signal<string>(exampleSigningKey.trim());
   decodedJwt = signal<string>('');
+  private currentDecodedJwt = signal<any>(null);
 
   inputHeader = 'JSON Web Token (JWT) Input:';
   summaryHeader = 'HEADER:';
@@ -111,19 +112,34 @@ export class DecodeComponent implements AfterViewInit {
     return this.tagsMap.get(key);
   }
 
+  headerSection(): string {
+    const decoded = this.currentDecodedJwt();
+    return decoded?.header ? JSON.stringify(decoded.header, null, 2) : '';
+  }
+
+  payloadSection(): string {
+    const decoded = this.currentDecodedJwt();
+    return decoded?.payload ? JSON.stringify(decoded.payload, null, 2) : '';
+  }
+
   jwtChanged($event: string) {
     console.log('JWT input changed:', $event);
     this.jwt.set($event);
     const decoded = this.serviceFacade.decodeJwt($event, this.signingKey());
 
-    this.decodedJwt.set(
-      decoded ? JSON.stringify(decoded, null, 2) : 'Invalid JWT'
-    );
+    if (decoded) {
+      this.currentDecodedJwt.set(decoded);
+      this.decodedJwt.set(JSON.stringify(decoded, null, 2));
+    } else {
+      this.currentDecodedJwt.set(null);
+      this.decodedJwt.set('Invalid JWT');
+    }
   }
 
   clearInput() {
     this.jwt.set('');
     this.decodedJwt.set('');
+    this.currentDecodedJwt.set(null);
   }
 
   pasteSampleJwt() {

@@ -28,4 +28,8 @@ export class DecodeFacadeService {
   decodeJwt(jwt: string, signingKey: string): any {
     return this.jwtService.decodeJwt(jwt, signingKey);
   }
+
+  isValidJwt(jwt: string, signingKey: string): boolean {
+    return this.jwtService.signatureValid();
+  }
 }

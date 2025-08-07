@@ -2,6 +2,8 @@ export interface JwtDecoded {
   header: JwtHeader;
   payload: JwtPayload;
   signature: string;
+  raw: string;
+  signingKey: string;
 }
 
 export interface JwtHeader {

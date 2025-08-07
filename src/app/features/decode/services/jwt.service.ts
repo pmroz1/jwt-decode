@@ -1,6 +1,8 @@
 import { computed, Injectable } from '@angular/core';
 import { JwtDecoded, JwtPayload } from '../models/jwt.model';
 import { signal } from '@angular/core';
+import * as CryptoJS from 'crypto-js';
+import * as forge from 'node-forge';
 
 @Injectable({
   providedIn: 'root',
@@ -17,7 +19,7 @@ export class JwtService {
     return jwt ? this.isSignatureValid(jwt) : false;
   });
 
-  decodeJwt(jwt: string, signingKey: string): any {
+  decodeJwt(jwt: string, signingKey?: string): JwtDecoded | null {
     if (!jwt) return null;
 
     const parts = jwt.split('.');
@@ -26,7 +28,16 @@ export class JwtService {
     try {
       const header = JSON.parse(atob(parts[0]));
       const payload = JSON.parse(atob(parts[1]));
-      return { header, payload, signature: parts[2] };
+      const decoded: JwtDecoded = { 
+        header, 
+        payload, 
+        signature: parts[2],
+        raw: jwt,
+        signingKey: signingKey || ''
+      };
+      
+      this.currentJwt.set(decoded);
+      return decoded;
     } catch (e) {
       console.error('Invalid JWT format', e);
       return null;
@@ -38,11 +49,11 @@ export class JwtService {
       return false;
     }
 
-    this.validateClaims(jwt.payload);
-    this.validateIssuer(jwt.payload.iss);
-    this.validateAudience(jwt.payload.aud);
+    const claimsValid = this.validateClaims(jwt.payload);
+    const issuerValid = this.validateIssuer(jwt.payload.iss);
+    const audienceValid = this.validateAudience(jwt.payload.aud);
 
-    return true;
+    return claimsValid && issuerValid && audienceValid;
   }
 
   private isSignatureValid(jwt: JwtDecoded): boolean {
@@ -67,27 +78,104 @@ export class JwtService {
   }
 
   private verifyPS256Signature(jwt: JwtDecoded): boolean {
-    throw new Error('Method not implemented.');
+    if (!jwt.signingKey) {
+      console.warn('No public key provided for PS256 verification');
+      return false;
+    }
+
+    try {
+      const parts = jwt.raw.split('.');
+      const signingInput = `${parts[0]}.${parts[1]}`;
+      const signature = this.base64UrlDecode(jwt.signature);
+      const publicKey = forge.pki.publicKeyFromPem(jwt.signingKey);
+      const md = forge.md.sha256.create();
+      md.update(signingInput, 'utf8');
+      const pss = forge.pss.create({
+        md: forge.md.sha256.create(),
+        mgf: forge.mgf.mgf1.create(forge.md.sha256.create()),
+        saltLength: 32
+      });
+      return publicKey.verify(md.digest().bytes(), signature, pss);
+    } catch (error) {
+      console.error('Error verifying PS256 signature:', error);
+      return false;
+    }
   }
 
-  private validateAudience(aud: any) {
-    throw new Error('Method not implemented.');
+  private validateAudience(aud: string | string[] | undefined): boolean {
+    if (!aud) {
+      console.warn('JWT token has no audience');
+      return false;
+    }
+    return true;
   }
 
-  private validateIssuer(iss: any) {
-    throw new Error('Method not implemented.');
+  private validateIssuer(iss: string | undefined): boolean {
+    if (!iss) {
+      console.warn('JWT token has no issuer');
+      return false;
+    }
+    return true;
   }
 
-  private validateClaims(payload: JwtPayload) {
-    throw new Error('Method not implemented.');
+  private validateClaims(payload: JwtPayload): boolean {
+    const now = Math.floor(Date.now() / 1000);
+    if (payload.exp && payload.exp < now) {
+      console.warn('JWT token is expired');
+      return false;
+    }
+    if (payload.iat && payload.iat > now) {
+      console.warn('JWT token is not yet valid');
+      return false;
+    }
+    return true;
   }
 
   private verifyHS256Signature(jwt: JwtDecoded): boolean {
-    return true;
+    if (!jwt.signingKey) {
+      console.warn('No signing key provided for HS256 verification');
+      return false;
+    }
+
+    try {
+      const parts = jwt.raw.split('.');
+      const signingInput = `${parts[0]}.${parts[1]}`;
+      const hash = CryptoJS.HmacSHA256(signingInput, jwt.signingKey);
+      const computedSignature = this.base64UrlEscape(CryptoJS.enc.Base64.stringify(hash));
+      return computedSignature === jwt.signature;
+    } catch (error) {
+      console.error('Error verifying HS256 signature:', error);
+      return false;
+    }
+  }
+
+  private base64UrlEscape(str: string): string {
+    return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
   }
 
   private verifyRS256Signature(jwt: JwtDecoded): boolean {
-    // Implement RS256 signature verification logic here
-    return true;
+    if (!jwt.signingKey) {
+      console.warn('No public key provided for RS256 verification');
+      return false;
+    }
+
+    try {
+      const parts = jwt.raw.split('.');
+      const signingInput = `${parts[0]}.${parts[1]}`;
+      const signature = this.base64UrlDecode(jwt.signature);
+      const publicKey = forge.pki.publicKeyFromPem(jwt.signingKey);
+      const md = forge.md.sha256.create();
+      md.update(signingInput, 'utf8');
+      return publicKey.verify(md.digest().bytes(), signature);
+    } catch (error) {
+      console.error('Error verifying RS256 signature:', error);
+      return false;
+    }
+  }
+
+  private base64UrlDecode(str: string): string {
+    str += new Array(5 - (str.length % 4)).join('=');
+    str = str.replace(/-/g, '+').replace(/_/g, '/');
+    return atob(str);
   }
 }

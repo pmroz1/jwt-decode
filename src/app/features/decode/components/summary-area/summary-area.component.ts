@@ -12,7 +12,7 @@ import { TagModule } from 'primeng/tag';
       <div class="flex flex-row items-center justify-between">
         <p class="text-lg font-semibold gap-2">{{ header() }}</p>
         <div class="ml-4 flex flex-wrap gap-2">
-          <button pButton severity="secondary" (click)="this.copyFunction()(displayValue(), this.header())">
+          <button pButton severity="secondary" (click)="copyFunction()(displayValue(), header())">
             <i class="pi pi-copy" pButtonIcon></i>
             <span pButtonLabel>COPY</span>
           </button>
