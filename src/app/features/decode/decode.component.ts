@@ -4,6 +4,7 @@ import {
   Component,
   inject,
   signal,
+  WritableSignal,
 } from '@angular/core';
 import { TextAreaComponent } from '@app/shared/components/text-area/text-area.component';
 import {
@@ -42,7 +43,8 @@ import { SummaryAreaComponent } from './components';
               <i class="pi pi-copy" pButtonIcon></i>
               <span pButtonLabel>COPY</span>
             </button>
-            @for(tag of encodedJwtInputTags(); track $index) {
+            @for(tag of (getTagsArrayFromMap('encodedJwtInputTags')?.() ?? []);
+            track $index) {
             <p-tag [value]="tag.value" [severity]="tag.severity"></p-tag>
             }
           </div>
@@ -57,7 +59,7 @@ import { SummaryAreaComponent } from './components';
         ></app-text-area>
         <app-summary-area
           [header]="signatureHeader"
-          [tagList]="summaryTags()"
+          [tagList]="getTagsArrayFromMap(this.signatureHeader)?.() ?? []"
           [displayValue]="signingKey()"
           [height]="'h-20'"
           [copyFunction]="copyToClipboardWrapper"
@@ -66,14 +68,14 @@ import { SummaryAreaComponent } from './components';
       <div class="flex flex-col flex-1 h-full justify-start p-4">
         <app-summary-area
           [header]="summaryHeader"
-          [tagList]="summaryTags()"
+          [tagList]="getTagsArrayFromMap(this.summaryHeader)?.() ?? []"
           [displayValue]="decodedJwt()"
           [height]="'h-80'"
           [copyFunction]="copyToClipboardWrapper"
         ></app-summary-area>
         <app-summary-area
           [header]="payloadHeader"
-          [tagList]="summaryTags()"
+          [tagList]="getTagsArrayFromMap(this.payloadHeader)?.() ?? []"
           [displayValue]="decodedJwt()"
           [height]="'h-80'"
           [copyFunction]="copyToClipboardWrapper"
@@ -88,16 +90,25 @@ export class DecodeComponent implements AfterViewInit {
   jwt = signal<string>(exampleEncodedJwt.trim());
   signingKey = signal<string>(exampleSigningKey.trim());
   decodedJwt = signal<string>('');
-  encodedJwtInputTags = signal<TagData[]>([]);
-  summaryTags = signal<TagData[]>([]);
 
   inputHeader = 'JSON Web Token (JWT) Input:';
   summaryHeader = 'HEADER:';
   payloadHeader = 'PAYLOAD:';
   signatureHeader = 'SIGNATURE:';
 
+  tagsMap: Map<string, WritableSignal<TagData[]>> = new Map([
+    ['encodedJwtInputTags', signal<TagData[]>([])],
+    [this.summaryHeader, signal<TagData[]>([])],
+    [this.payloadHeader, signal<TagData[]>([])],
+    [this.signatureHeader, signal<TagData[]>([])],
+  ]);
+
   ngAfterViewInit() {
     this.jwtChanged(this.jwt());
+  }
+
+  getTagsArrayFromMap(key: string): WritableSignal<TagData[]> | undefined {
+    return this.tagsMap.get(key);
   }
 
   jwtChanged($event: string) {
@@ -121,8 +132,11 @@ export class DecodeComponent implements AfterViewInit {
 
   copyToClipboard(
     textToCopy: string = this.jwt(),
-    tagsArraySignal = this.encodedJwtInputTags
+    mapKey: string = 'encodedJwtInputTags'
   ) {
+    const tagsArraySignal =
+      this.getTagsArrayFromMap(mapKey) ?? signal<TagData[]>([]);
+
     navigator.clipboard
       .writeText(textToCopy)
       .then(() => {
@@ -142,7 +156,8 @@ export class DecodeComponent implements AfterViewInit {
       });
   }
 
-  copyToClipboardWrapper = (value: string, tags: TagData[]) => {
-    this.copyToClipboard(value, this.encodedJwtInputTags);
+  copyToClipboardWrapper = (value: string, tagMapKey: string) => {
+    console.log('Copying:', value, tagMapKey);
+    this.copyToClipboard(value, tagMapKey);
   };
 }

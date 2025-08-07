@@ -12,7 +12,7 @@ import { TagModule } from 'primeng/tag';
       <div class="flex flex-row items-center justify-between">
         <p class="text-lg font-semibold gap-2">{{ header() }}</p>
         <div class="ml-4 flex flex-wrap gap-2">
-          <button pButton severity="secondary" (click)="this.copyFunction()">
+          <button pButton severity="secondary" (click)="this.copyFunction()(displayValue(), this.header())">
             <i class="pi pi-copy" pButtonIcon></i>
             <span pButtonLabel>COPY</span>
           </button>
@@ -37,7 +37,8 @@ export class SummaryAreaComponent {
   tagList = input<TagData[]>([]);
   displayValue = input<string>('');
   height = input<string>('h-80');
-  copyFunction = input<(value: string, tags: TagData[]) => void>(() => {
+  
+  copyFunction = input<(value: string, tagMapKey: string) => void>(() => {
     console.log('Copying:', this.displayValue(), this.tagList());
   });
 }
