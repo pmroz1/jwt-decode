@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { DecodeComponent } from './features/decode/decode.component';
+import { DecodeComponent } from '@features/decode/decode.component';
+
 
 @Component({
   selector: 'app-root',
