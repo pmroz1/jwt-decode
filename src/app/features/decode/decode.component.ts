@@ -42,12 +42,16 @@ import { DecodeFacadeService } from './services/decode-facade.service';
         <app-text-area
           class="w-full h-full pt-4"
           [inputValue]="jwt()"
+          [readonly]="false"
           [placeholder]="'Enter JWT here...'"
+          (valueChange)="jwtChanged($event)"
         ></app-text-area>
       </div>
       <app-text-area
         class="w-full h-full p-4"
+        [readonly]="true"
         [placeholder]="''"
+        [inputValue]="decodedJwt()"
       ></app-text-area>
     </div>
   `,
@@ -60,6 +64,12 @@ export class DecodeComponent {
 
   inputHeader = 'JSON Web Token (JWT) Input:';
   inputTags = signal<TagData[]>([]);
+
+  jwtChanged($event: string) {
+    console.log('JWT input changed:', $event);
+    this.jwt.set($event);
+    this.decodedJwt.set(this.serviceFacade.decodeJwt($event));
+  }
 
   clearInput() {
     this.jwt.set('');
