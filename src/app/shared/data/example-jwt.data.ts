@@ -15,3 +15,5 @@ export const exampleDecodedJwt = {
   },
   signature: 'KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30',
 };
+
+export const exampleSigningKey = 'a-string-secret-at-least-256-bits-long';
