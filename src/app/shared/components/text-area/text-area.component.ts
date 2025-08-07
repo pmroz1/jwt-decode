@@ -15,9 +15,9 @@ import { TextareaModule } from 'primeng/textarea';
       id="input-textarea"
       class="{{ defaultClass }} {{ height() }}"
       placeholder="{{ placeholder() }}"
+      [value]="inputValue()"
       (input)="readonly() ? null : onInputChange($event)"
-      >{{ inputValue() }}</textarea
-    >
+    ></textarea>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

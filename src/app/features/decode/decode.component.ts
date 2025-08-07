@@ -49,7 +49,7 @@ import { SummaryAreaComponent } from './components';
           <p class="text-lg font-semibold">{{ inputHeader }}</p>
           <div class="ml-4 flex flex-wrap gap-2">
             <button pButton severity="secondary" (click)="pasteSampleJwt()">
-              <i class="pi pi-eraser" pButtonIcon></i>
+              <i class="pi pi-file" pButtonIcon></i>
               <span pButtonLabel>PASTE SAMPLE JWT</span>
             </button>
             <button pButton severity="secondary" (click)="clearInput()">
@@ -201,11 +201,21 @@ export class DecodeComponent implements AfterViewInit {
     this.signingKey.set('');
     this.decodedJwt.set('');
     this.currentDecodedJwt.set(null);
+    this.clearAllTags();
     this.serviceFacade.decodeJwt('', '');
   }
 
+  private clearAllTags() {
+    this.tagsMap.forEach(tagSignal => {
+      tagSignal.set([]);
+    });
+  }
+
   pasteSampleJwt() {
+    this.clearAllTags();
     this.jwt.set(exampleEncodedJwt.trim());
+    this.signingKey.set(exampleSigningKey.trim());
+    this.revalidateJwt();
   }
 
   copyToClipboard(
