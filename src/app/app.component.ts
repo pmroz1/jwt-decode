@@ -12,7 +12,7 @@ import { DecodeComponent } from '@features/decode/decode.component';
       <p class="text-lg mb-8">
         This app decodes JWT tokens and displays their contents.
       </p>
-      <app-decode></app-decode>
+      <app-decode class="w-full h-full p-4"></app-decode>
     </div>
   `,
 })
