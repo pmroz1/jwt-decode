@@ -22,7 +22,7 @@ import { SummaryAreaComponent } from './components';
   imports: [TextAreaComponent, TagModule, ButtonModule, SummaryAreaComponent],
   template: `
     <div class="flex flex-row items-stretch h-full">
-      <div class="flex flex-col flex-1 h-full p-4">
+      <div class="flex flex-col flex-1 h-full pt-4">
         <div class="flex flex-row justify-between items-center ">
           <p class="text-lg font-semibold">{{ inputHeader }}</p>
           <div class="ml-4 flex flex-wrap gap-2">
@@ -49,32 +49,34 @@ import { SummaryAreaComponent } from './components';
         </div>
         <app-text-area
           class="w-full h-full pt-4"
-          [height]="'h-200'"
+          [height]="'h-100'"
           [inputValue]="jwt()"
           [readonly]="false"
           [placeholder]="'Enter JWT here...'"
           (valueChange)="jwtChanged($event)"
         ></app-text-area>
-        <app-text-area
-          class="w-full h-20 pt-4"
-          [placeholder]="'Enter Signing Key here...'"
-          [inputValue]="signingKey()"
-        ></app-text-area>
+        <app-summary-area
+          [header]="signatureHeader"
+          [tagList]="summaryTags()"
+          [displayValue]="signingKey()"
+          [height]="'h-20'"
+          [copyFunction]="copyToClipboardWrapper"
+        ></app-summary-area>
       </div>
       <div class="flex flex-col flex-1 h-full justify-start p-4">
         <app-summary-area
-            [header]="summaryHeader"
-            [tagList]="summaryTags()"
-            [displayValue]="decodedJwt()"
-            [height]="'h-80'"
-            [copyFunction]="copyToClipboardWrapper"
+          [header]="summaryHeader"
+          [tagList]="summaryTags()"
+          [displayValue]="decodedJwt()"
+          [height]="'h-80'"
+          [copyFunction]="copyToClipboardWrapper"
         ></app-summary-area>
         <app-summary-area
-            [header]="payloadHeader"
-            [tagList]="summaryTags()"
-            [displayValue]="decodedJwt()"
-            [height]="'h-80'"
-            [copyFunction]="copyToClipboardWrapper"
+          [header]="payloadHeader"
+          [tagList]="summaryTags()"
+          [displayValue]="decodedJwt()"
+          [height]="'h-80'"
+          [copyFunction]="copyToClipboardWrapper"
         ></app-summary-area>
       </div>
     </div>

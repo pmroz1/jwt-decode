@@ -8,25 +8,27 @@ import { TagModule } from 'primeng/tag';
   selector: 'app-summary-area',
   imports: [TextAreaComponent, TagModule, ButtonModule],
   template: `
-    <div class="flex flex-row items-center justify-between ml-4 mr-4">
-      <p class="text-lg font-semibold gap-2">{{ header() }}</p>
-      <div class="mb-4 flex flex-wrap gap-2">
-        <button pButton severity="secondary" (click)="this.copyFunction()">
-          <i class="pi pi-copy" pButtonIcon></i>
-          <span pButtonLabel>COPY</span>
-        </button>
-        @for(tag of tagList(); track $index) {
-        <p-tag [value]="tag.value" [severity]="tag.severity"></p-tag>
-        }
+    <div class="flex flex-col flex-1 h-full">
+      <div class="flex flex-row items-center justify-between">
+        <p class="text-lg font-semibold gap-2">{{ header() }}</p>
+        <div class="ml-4 flex flex-wrap gap-2">
+          <button pButton severity="secondary" (click)="this.copyFunction()">
+            <i class="pi pi-copy" pButtonIcon></i>
+            <span pButtonLabel>COPY</span>
+          </button>
+          @for(tag of tagList(); track $index) {
+          <p-tag [value]="tag.value" [severity]="tag.severity"></p-tag>
+          }
+        </div>
       </div>
+      <app-text-area
+        class="w-full pt-4"
+        [height]="height()"
+        [readonly]="true"
+        [placeholder]="''"
+        [inputValue]="displayValue()"
+      ></app-text-area>
     </div>
-    <app-text-area
-      class="w-full pt-4"
-      [height]="height()"
-      [readonly]="true"
-      [placeholder]="''"
-      [inputValue]="displayValue()"
-    ></app-text-area>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
