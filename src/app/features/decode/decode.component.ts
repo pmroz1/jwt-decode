@@ -60,6 +60,29 @@ export class DecodeComponent {
   }
 
   copyToClipboard() {
-    
+    const textToCopy = this.jwt();
+    navigator.clipboard
+      .writeText(textToCopy)
+      .then(() => {
+        this.inputTags.set([
+          ...this.inputTags(),
+          { value: 'Copied to clipboard!', severity: SeverityType.Success },
+        ]);
+
+        setTimeout(() => {
+          this.inputTags.set(
+            this.inputTags().filter(
+              (tag) => tag.value !== 'Copied to clipboard!'
+            )
+          );
+        }, 2000);
+      })
+      .catch((err) => {
+        console.error('Failed to copy text: ', err);
+        this.inputTags.set([
+          ...this.inputTags(),
+          { value: 'Copy failed', severity: SeverityType.Danger },
+        ]);
+      });
   }
 }
